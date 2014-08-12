@@ -2,7 +2,9 @@
 #define STRIP_LENGTH 110
 #define MS_DELAY 40
 #define CHANCE_COLOR 750
-#define CHANCE_DRIP 0
+#define CHANCE_SPEED 2
+#define CHANCE_FADE 1000
+#define MIN_SPEED 20
 #define BLEND_FACTOR 25
 #define FADE_FACTOR 99
 
@@ -35,6 +37,7 @@ struct CRGB
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(STRIP_LENGTH, 6, NEO_GRB + NEO_KHZ800);
 CRGB buffer[BUFFER_LENGTH], buffer_copy[BUFFER_LENGTH], dripColor;
+uint8_t CHANCE_DRIP = 4, fadeCount = 0;
 
 void setup() {
   strip.begin();
@@ -51,14 +54,29 @@ void setup() {
 void loop() {
   if (random(0, CHANCE_COLOR) == 0) {
     pickNewDrip();
+
+    if (random(0, CHANCE_SPEED) == 0) {
+      CHANCE_DRIP = random(0, MIN_SPEED);
+    }
   }
 
   if (random(0, CHANCE_DRIP) == 0) {
     drip();
   }
 
+  if (random(0, CHANCE_FADE) == 0) {
+    fadeCount = 100;
+  }
+
+  if (CHANCE_DRIP < 5 || fadeCount > 0) {
+    fade();
+
+    if (fadeCount > 0) {
+      fadeCount--;
+    }
+  }
+
   blend();
-  fade();
   render();
   delay(MS_DELAY);
 }
